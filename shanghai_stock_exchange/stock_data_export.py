@@ -1,10 +1,35 @@
 import xlwt
 import pandas as pd
 from shanghai_stock_exchange.stock_data_deal import deal_day_data, get_all_stock_day_data, \
-    deal_day_data_4_auto_invest_plan_a, deal_day_data_4_auto_invest_plan_b, deal_day_data_4_auto_invest_plan_c
+    deal_day_data_4_auto_invest_plan
+
 from shanghai_stock_exchange.utils.date_utils import date_add_for_year
 import sys
 sys.setrecursionlimit(5000000)
+
+# 预定义定投计划数据
+stock_auto_invest_plan_list = {
+    # 上证
+    '000001': {'stock_plan_a': {'name': '每周一定投', 'days': [1]},
+               'stock_plan_b': {'name': '每周四定投', 'days': [4]},
+               'stock_plan_c': {'name': '每周一，周四定投', 'days': [1,4]},
+               'stock_plan_d': {'name': '每周二，周三，周五定投', 'days': [2, 3, 5]},
+               'auto_invest_mony': 200,
+               'stock_plan_name_container':['stock_plan_a','stock_plan_b','stock_plan_c']
+               },
+    # 深成
+    '399001': {'stock_plan_a': {'name': '每周一，周四定投', 'days': [1, 4]},
+               'stock_plan_b': {'name': '每周一定投', 'days': [1]},
+               'stock_plan_c': {'name': '每周四定投', 'days': [4]},
+               'stock_plan_d': {'name': '每周二，周三，周五定投', 'days': [2, 3, 5]},
+               'auto_invest_mony': 200,
+               'stock_plan_name_container':['stock_plan_a','stock_plan_b','stock_plan_c']
+               },
+    # 创业
+    '399006': {'stock_plan_a': {}, 'stock_plan_b': {}, 'stock_plan_c': {}}
+}
+
+
 
 # 定投计划分析数据excel导出
 # stock_code_list [{'code': '000001', 'name':'上证指数', 'module': 'SZ'}]
@@ -12,14 +37,14 @@ def export_auto_invest_plan_analyze_data(stock_code_list):
 
     for stock_code in stock_code_list:
         total_auto_invest_plan_list = []
-        for plan_index in range(3):
+        print(stock_auto_invest_plan_list)
+        stock_plan_dict = stock_auto_invest_plan_list[stock_code['code']]
+        stock_plan_name_list = stock_plan_dict['stock_plan_name_container']
+        for plan_name in stock_plan_name_list:
             cur_total_auto_invest_plan_dict = {}
-            if plan_index == 0:
-                cur_total_auto_invest_plan_dict = deal_day_data_4_auto_invest_plan_a(stock_code['code'], stock_code['module'])
-            if plan_index == 1:
-                cur_total_auto_invest_plan_dict = deal_day_data_4_auto_invest_plan_b(stock_code['code'], stock_code['module'])
-            if plan_index == 2:
-                cur_total_auto_invest_plan_dict = deal_day_data_4_auto_invest_plan_c(stock_code['code'], stock_code['module'])
+
+            cur_total_auto_invest_plan_dict = deal_day_data_4_auto_invest_plan(plan_name, stock_auto_invest_plan_list, stock_code['code'],
+                                                                                 stock_code['module'])
 
             cur_total_auto_invest_plan_list = cur_total_auto_invest_plan_dict['auto_invest_ok_list']
             if cur_total_auto_invest_plan_list is not None:
@@ -122,13 +147,6 @@ def export_excel_4_auto_invest_plan_data(export,file_name_suffix):
     # 保存表格
     file_path.save()
 
-    # cur_ok_auto_invest['stock_plan'] = stock_plan
-    # cur_ok_auto_invest['start_deal_date'] = date_str
-    # cur_ok_auto_invest['end_deal_date'] = cur_auto_invest_plan_result[1]
-    # cur_ok_auto_invest['auto_invest_ok_count'] = auto_invest_ok_count
-    # last_line_analyze_data['auto_invest_count'] = auto_invest_count
-    # last_line_analyze_data['auto_invest_ok_rate']
-
 
 # 将分析完成的列表导出为excel表格
 # export_stock_data(
@@ -140,3 +158,4 @@ export_auto_invest_plan_analyze_data(
     [{'code': '000001', 'name':'上证指数', 'module': 'SZ'}])
 
 # , {'code': '399001', 'name':'深证成指', 'module': 'SC'}
+
